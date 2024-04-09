@@ -1,18 +1,15 @@
-import React from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { getEmployees } from './utils/API';
+
+const PreviewPage = lazy(() => import('./components/Preview'));
 
 function App() {
 
-  const getEmployeesTest = async () => {
-    const employees = await getEmployees();
-    console.log("here's employees: ", employees)
-  }
-
-  getEmployeesTest();
+ 
   return (
     <div className="App">
+      <Suspense fallback={null}>{React.createElement(PreviewPage)}</Suspense>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>

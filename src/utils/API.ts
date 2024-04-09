@@ -1,5 +1,5 @@
-export const getEmployees = async () => {
-    const res = await fetch('/api/employees', {
+export const getContainers = async () => {
+    const res = await fetch('/api/containers', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
