@@ -10,32 +10,43 @@ const loadContainers = async () => {
 interface TitleBarProps {
     title: string;
     unsortable?: boolean;
+    sorted?: boolean;
     onClick?: () => void;
 }
 
 interface sortFunction {
-    (sortParam: string): void;
+    (sortParam?: keyof Cases): void;
 }
 
 const TitleBar = ({ containers, sortContainers }: { containers: Cases[], sortContainers: sortFunction }) => {
-    const [sortParam, setSortParam] = useState<string>('Name');
+    const [sortParam, setSortParam] = useState<keyof Cases>();
+    const [flip, setFlip] = useState<boolean>(false);
+    const handleClick =(param: keyof Cases) => {
+        setFlip((c)=> !c);
+        if(param === sortParam){
+            sortContainers();
+        } else {
+            setSortParam(param)
+        }
+    };
 
     useEffect(()=> {
+        console.log("useeffect called")
         sortContainers(sortParam)
-    },[sortContainers, sortParam]);
+    },[sortParam]);
 
     return (
         <>
             <TitleBarItem title={'Image'} unsortable/>
-            <TitleBarItem title={'Name'} onClick={()=>setSortParam('Name')}/>
-            <TitleBarItem title={'ROI (%)'} onClick={()=>setSortParam('ROI (%)')}/>
-            <TitleBarItem title={'Price'} onClick={()=>setSortParam('Price')}/>
+            <TitleBarItem title={'Name'} onClick={()=>handleClick('name')} sorted={'name' === sortParam && flip}/>
+            <TitleBarItem title={'ROI (%)'} onClick={()=>handleClick('roi')} sorted={'roi' === sortParam && flip}/>
+            <TitleBarItem title={'Price'} onClick={()=>handleClick('price')} sorted={'price' === sortParam && flip}/>
         </>
     )
 }
 
 const TitleBarItem = (props: TitleBarProps) => {
-    const {title, unsortable, onClick} = props;
+    const {title, unsortable, onClick, sorted} = props;
     const [hidden, setHidden] = useState<boolean>(true);
     return (
         <Box
@@ -54,7 +65,7 @@ const TitleBarItem = (props: TitleBarProps) => {
                 
                 <FontAwesomeIcon 
                     icon={faArrowUpLong} 
-                    flip="vertical"
+                    flip={sorted ? "horizontal" : "vertical"}
                     inverse={hidden}
                 />
                 
@@ -111,8 +122,25 @@ const Preview = () => {
         });
     },[]);
 
-    const sortContainers: sortFunction = (sortParam) => {
-        console.log("log from sortContainers: ", sortParam);
+    const sortContainers: sortFunction = (sortParam?: keyof Cases) => {
+        console.log("sortContainers: ", sortParam)
+        setContainers((current)=>{
+            if(current){
+                if(!sortParam){
+                    //have to say slice(0) because setState doesnt work well with references
+                    const sorted: Cases[] = current.slice(0).reverse();
+                    return sorted;
+                }
+                const sorted: Cases[] = current.slice(0).sort((a: Cases, b: Cases)=> {
+                    //TODO this seems wrong, is there a way to do this without casting?
+                    return typeof a[sortParam] === 'string' ? 
+                        (a[sortParam].toString().toUpperCase() > b[sortParam].toString().toUpperCase() ? 1 : -1) : 
+                        (a[sortParam] as number) - (b[sortParam] as number) 
+                });
+                return sorted;
+            }
+            return current;
+        })
     }
 
     return containers ? (
