@@ -1,28 +1,26 @@
 import React, {useState, useEffect} from 'react';
 import { getContainers, Cases } from '../utils/API';
 import { List, ListItem, ListItemText, ListItemButton, Divider, ImageListItem, Box, Typography } from '@mui/material';
-import {faArrowUpLong} from '@fortawesome/free-solid-svg-icons';
+import {faSort} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-const loadContainers = async () => {
-    return await getContainers();
-};
+import styles, {functionalStyles} from '../utils/styles';
 
-interface TitleBarProps {
+interface TitleBarItemProps {
     title: string;
     unsortable?: boolean;
     sorted?: boolean;
     onClick?: () => void;
 }
 
-interface sortFunction {
-    (sortParam?: keyof Cases): void;
+type sortFunction = (sortParam?: keyof Cases) => void;
+
+interface TitleBarProps {
+    sortContainers: sortFunction
 }
 
-const TitleBar = ({ containers, sortContainers }: { containers: Cases[], sortContainers: sortFunction }) => {
+const TitleBar = ({ sortContainers }: TitleBarProps) => {
     const [sortParam, setSortParam] = useState<keyof Cases>();
-    const [flip, setFlip] = useState<boolean>(false);
     const handleClick =(param: keyof Cases) => {
-        setFlip((c)=> !c);
         if(param === sortParam){
             sortContainers();
         } else {
@@ -31,46 +29,35 @@ const TitleBar = ({ containers, sortContainers }: { containers: Cases[], sortCon
     };
 
     useEffect(()=> {
-        console.log("useeffect called")
         sortContainers(sortParam)
     },[sortParam]);
 
     return (
         <>
             <TitleBarItem title={'Image'} unsortable/>
-            <TitleBarItem title={'Name'} onClick={()=>handleClick('name')} sorted={'name' === sortParam && flip}/>
-            <TitleBarItem title={'ROI (%)'} onClick={()=>handleClick('roi')} sorted={'roi' === sortParam && flip}/>
-            <TitleBarItem title={'Price'} onClick={()=>handleClick('price')} sorted={'price' === sortParam && flip}/>
+            <TitleBarItem title={'Name'} onClick={()=>handleClick('name')} />
+            <TitleBarItem title={'ROI (%)'} onClick={()=>handleClick('roi')} />
+            <TitleBarItem title={'Price'} onClick={()=>handleClick('price')} />
         </>
     )
 }
 
-const TitleBarItem = (props: TitleBarProps) => {
-    const {title, unsortable, onClick, sorted} = props;
+const TitleBarItem = (props: TitleBarItemProps) => {
+    const {title, unsortable, onClick} = props;
     const [hidden, setHidden] = useState<boolean>(true);
     return (
         <Box
             onMouseEnter={() => setHidden(false)}
             onMouseLeave={() => setHidden(true)}
             onClick={onClick}
-            sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                width: '25%',
-                justifyContent: 'right',
-                backgroundColor: '#fff'
-            }}
+            sx={styles.TitleBarItem}
         >   
             {!unsortable && (
-                
-                <FontAwesomeIcon 
-                    icon={faArrowUpLong} 
-                    flip={sorted ? "horizontal" : "vertical"}
-                    inverse={hidden}
-                />
-                
+                <Box sx={functionalStyles.TitleBarItemSortIcon(hidden)}>
+                    <FontAwesomeIcon icon={faSort} />
+                </Box>
             )}
-            <Typography sx={{fontWeight: 'bold', textAlign: 'right'}}>{title}</Typography>
+            <Typography sx={styles.TitleBarTitle}>{title}</Typography>
         </Box>
     )
 }
@@ -81,24 +68,19 @@ const PreviewListItem = (props: Cases) => {
         <ListItem 
             disablePadding
             divider
-            sx={{
-                '&:hover': {
-                  backgroundColor: 'secondary.main'
-                },
-                display: 'flex', justifyContent: 'space-between', textAlign: 'right'
-              }}
+            sx={styles.ListItem}
         >
            { /* TODO image for the case goes here */ }
-           <Box sx={{width: '25%'}}>           
-           <img src={image} alt={name} height={'100px'}/>
+           <Box sx={styles.FlexChild}>           
+           <img src={image} alt={name} height={'60rem'}/>
            </Box>
             <ListItemText 
                 primary={name}
                 primaryTypographyProps={{fontWeight: 'bold'}}
-                sx={{width: '25%'}} 
+                sx={styles.FlexChild} 
             />
-            <ListItemText primary={roi} sx={{width: '25%'}}  />
-            <ListItemText primary={price} sx={{width: '25%'}}/>
+            <ListItemText primary={roi} sx={styles.FlexChild}  />
+            <ListItemText primary={price} sx={styles.FlexChild}/>
         </ListItem>
     )
 }
@@ -109,21 +91,16 @@ const Preview = () => {
     const [status, setStatus] = useState<String>('loading');
 
     useEffect(()=>{
-        loadContainers().then(res => {
-            try {
-                if(typeof res === 'number'){
-                    setStatus("Server error. Please try again later");
-                } else {
-                    setContainers(res);
-                }
-            } catch(e) {
-                throw new Error(`${e}`);
+        getContainers().then(res => {
+            if(res.err){
+                setStatus("Server error. Please try again later");
+            } else {
+                setContainers(res.cases);
             }
-        });
+        }).catch((e) => console.log(e))
     },[]);
 
     const sortContainers: sortFunction = (sortParam?: keyof Cases) => {
-        console.log("sortContainers: ", sortParam)
         setContainers((current)=>{
             if(current){
                 if(!sortParam){
@@ -133,8 +110,8 @@ const Preview = () => {
                 }
                 const sorted: Cases[] = current.slice(0).sort((a: Cases, b: Cases)=> {
                     //TODO this seems wrong, is there a way to do this without casting?
-                    return typeof a[sortParam] === 'string' ? 
-                        (a[sortParam].toString().toUpperCase() > b[sortParam].toString().toUpperCase() ? 1 : -1) : 
+                    return typeof a[sortParam] === 'string' ?
+                        (a[sortParam] as string).localeCompare(b[sortParam] as string)  : 
                         (a[sortParam] as number) - (b[sortParam] as number) 
                 });
                 return sorted;
@@ -156,7 +133,7 @@ const Preview = () => {
                     zIndex: '100',
                 }}
             >
-            <TitleBar containers={containers} sortContainers={sortContainers}/>
+            <TitleBar sortContainers={sortContainers}/>
             </ListItem>
             {containers.map((i) => {
                 return (
