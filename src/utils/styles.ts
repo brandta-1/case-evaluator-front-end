@@ -21,7 +21,15 @@ const styles: Record<string, SxProps<Theme>> = {
         }
     },
     
-    FlexChild: {flex: '1 1 0'}
+    FlexChild: {flex: '1 1 0'},
+
+    StickyBar: {
+        position: 'sticky',
+        left: '0',
+        right: '0',
+        top: '0',
+        zIndex: '100',
+    }
 }
 
 const functionalStyles: Record<string, (...args: any[]) => SxProps<Theme>> = {

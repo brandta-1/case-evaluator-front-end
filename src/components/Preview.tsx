@@ -109,7 +109,6 @@ const Preview = () => {
                     return sorted;
                 }
                 const sorted: Cases[] = current.slice(0).sort((a: Cases, b: Cases)=> {
-                    //TODO this seems wrong, is there a way to do this without casting?
                     return typeof a[sortParam] === 'string' ?
                         (a[sortParam] as string).localeCompare(b[sortParam] as string)  : 
                         (a[sortParam] as number) - (b[sortParam] as number) 
@@ -125,13 +124,7 @@ const Preview = () => {
             <ListItem 
                 disablePadding 
                 divider 
-                sx={{
-                    position: 'sticky',
-                    left: '0',
-                    right: '0',
-                    top: '0',
-                    zIndex: '100',
-                }}
+                sx={styles.StickyBar}
             >
             <TitleBar sortContainers={sortContainers}/>
             </ListItem>
