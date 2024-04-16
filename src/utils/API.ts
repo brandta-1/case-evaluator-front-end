@@ -5,6 +5,14 @@ export interface Cases {
   price: number;
 }
 
+export interface Articles {
+  title: string;
+  description: string;
+  link: string;
+  image: string;
+  index: number;
+}
+
 export const getContainers = async (): Promise<{ err: boolean, cases: Cases[] }> => {
   try {
     const res = await fetch('/containers', {
@@ -27,7 +35,7 @@ export const getContainers = async (): Promise<{ err: boolean, cases: Cases[] }>
   }
 }
 
-export const getRSS = async () => {
+export const getRss = async (): Promise<{ err: boolean, articles: Articles[] }> => {
   try {
     const res = await fetch('/rss', {
       method: 'GET',
@@ -38,9 +46,13 @@ export const getRSS = async () => {
 
     if (res.status !== 200) throw new Error()
 
-   console.log("here is res: ", res);
+    const articles: Articles[] = await res.json()
+    return {
+      err: false,
+      articles
+    }
   }
   catch {
-    return { err: true }
+    return { err: true, articles: []}
   }
 }

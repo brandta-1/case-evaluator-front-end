@@ -4,6 +4,7 @@ import './App.css';
 
 const PreviewPage = lazy(() => import('./components/Preview'));
 const Feed = lazy(() => import('./components/Feed'));
+const Article = lazy(() => import('./components/Article'));
 function App() {
 
  
