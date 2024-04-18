@@ -120,7 +120,7 @@ const Preview = () => {
     }
 
     return containers ? (
-        <List sx={{top: 420}}>
+        <List sx={styles.List}>
             <ListItem 
                 disablePadding 
                 divider 

@@ -19,6 +19,7 @@ const fontFaces = [
 ];
 
 const theme = createTheme({
+  
   typography: {
     fontFamily: 'SanFran, serif',
   },
@@ -28,9 +29,13 @@ const theme = createTheme({
     }
   },
   palette: {
-        secondary: {
-            main: '#D6D5DD'
-        }
+    text: {
+      primary: '#000000',
+      secondary: '#00A1E0'
+    },
+    secondary: {
+        main: '#D6D5DD'
+    }
   }
 });
 
