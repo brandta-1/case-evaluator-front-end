@@ -11,6 +11,10 @@ html, body {
   scrollbar-gutter: stable;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 #root{
   width: 920px;
   margin-bottom: 3rem;
